@@ -130,15 +130,13 @@ class Polygon(Poly):
     
 if __name__ == "__main__":
     root = Pane(root=True)
-    tr0 = Transform(0,0,1)
-    tr1 = Transform(100,100,0.5, prior=tr0)
-    tr2 = Transform(100,100,0.5, prior=tr1)
 
     p1 = Polygon([(0,0), (0,100), (100,100), (0,0)])
     root.append(p1)
 
     child = Pane(parent=root, sf=.5, tr=(100,100))
-    child.append(p1)
+    child.append(Polygon([(0,0), (0,100), (100,100), (100,0), (0,0)],
+                             fill=(0,255,0)))
 
     
     grandchild = Pane(parent=child, sf=0.5, tr=(100,100))
