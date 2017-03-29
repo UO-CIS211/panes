@@ -34,7 +34,8 @@ class Pane:
     def __init__(self, parent=None, root=False,  tr=(0,0), sf=1.0):
         if not root and not parent:
             raise PanesError("Every non-root pane must have a parent")
-        self.tr = tr
+        self.parent = parent
+        self.dx, self.dy = tr
         self.sf = sf
         self.contents = [ ]
 
@@ -43,6 +44,23 @@ class Pane:
             if not screen:
                 screen = pygame.display.set_mode(SIZE)
                 screen.fill((255,255,255))
+        else:
+            parent.append(self)
+
+    def append(self, el):
+        """
+        Append a polyline, polygon, or nested pane. 
+        """
+        self.contents.append(el)
+
+    def render(self, transform=None):
+        transform = Transform(self.dx, self.dy, self.sf, prior=transform)
+        for el in self.contents:
+            el.render(transform)
+        if not self.parent:
+            pygame.display.flip()
+            screen.fill((255,255,255)) # For next frame
+
 
 def is_numeric(x):
     return isinstance(x,int) or isinstance(x,float)
@@ -117,13 +135,18 @@ if __name__ == "__main__":
     tr2 = Transform(100,100,0.5, prior=tr1)
 
     p1 = Polygon([(0,0), (0,100), (100,100), (0,0)])
-    p1.render(tr0)
-    p1.render(tr1)
-    p1.render(tr2)
+    root.append(p1)
 
-    pygame.display.flip()
-    screen.fill((255,255,255)) # For next frame
-    input("Press enter to end")
+    child = Pane(parent=root, sf=.5, tr=(100,100))
+    child.append(p1)
+
+    
+    grandchild = Pane(parent=child, sf=0.5, tr=(100,100))
+    grandchild.append(p1)
+
+
+    root.render()
+    input("Press enter to end")    
     
 
     
