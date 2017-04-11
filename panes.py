@@ -14,6 +14,7 @@ import pygame
 SIZE = 500,500
 screen = None
 pygame.init()
+pygame.font.init()
 
 class Error(Exception):
     """Base class for exceptions in this module"""
@@ -193,8 +194,24 @@ class GridCellPoly(Polygon):
                           (col+1,row+1), (col+1,row),
                           (col, row)],
                          stroke, fill)
-    
 
+class Text:
+    """
+    A string of text at coordinates (x,y)
+    """
+    def __init__(self, text, x, y, color=(0,0,0)):
+        self.loc = (x,y)
+        # print("Placing text at {},{}".format(x,y))
+        self.text = text
+        self.color=color
+
+    def render(self, context):
+        assert isinstance(context, Transform)
+        font = pygame.font.SysFont("Helvetica", 32)
+        screen_coords = context.tx(self.loc)
+        # print(screen_coords) # Debugging
+        img = font.render(self.text, False, self.color)
+        screen.blit(img,screen_coords)
 
     
 if __name__ == "__main__":

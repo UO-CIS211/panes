@@ -23,6 +23,7 @@ for row in range(10):
     for col in range(5):
         grid.append(panes.GridCellPoly(row, col,
                                        fill=random.choice(color_wheel)))
+        grid.append(panes.Text("{},{}".format(row,col), col+0.5, row+0.5))
         
 root.render()
 input("Press enter to end")    
