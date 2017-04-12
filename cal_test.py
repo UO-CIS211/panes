@@ -19,10 +19,10 @@ bars  = [ (255,153,153), #pink
 start_hour = 8
 
 root = Pane(root=True)
-
 width,height = panes.SIZE
 
-grid = GridPane(root, 10, 6)
+framed = panes.Framed(root, left=30,right=10,top=30,bottom=10)
+grid = GridPane(framed, 10, 5)
 
 day_columns = { "m": 1, "t": 2, "w": 3, "r": 4, "f": 5 }
 offsets_col = { "A": 0.1, "B": 0.4, "C": 0.7 }
@@ -36,9 +36,7 @@ def hours_offset( time_string ):
     hour = int(time_string[0:2])
     minute = int(time_string[2:4])
     offset = (hour - start_hour) + minute/60
-    # Plus 1 for top margin
-    return offset + 1
-
+    return offset
 
 def draw_bar(pane, in_col, from_time, to_time):
     pane.append(panes.Polygon(
@@ -47,10 +45,9 @@ def draw_bar(pane, in_col, from_time, to_time):
          (in_col,from_time)],
          fill=class_color))
 
-
 # Background columns in alternating greys
-for col in range(1,6):
-    for row in range(1,10):
+for col in range(6):
+    for row in range(10):
         # Grey fill
         grid.append(panes.GridCellPoly(row, col,
                                        stroke=0,
@@ -61,13 +58,15 @@ for col in range(1,6):
                                        fill=(0,0,0)))
 
 
-
 # Label the hours
-for row in range(9):
-    grid.append(panes.Text("{}".format(start_hour+row), 0.5, row+1))
+for row in range(10):
+    offset = row
+    label_y = grid.y_out(offset, root)
+    print("Y coord for label: {} -> {}".format(offset, label_y))
+    root.append(panes.Text("{}".format(start_hour+row), 5, label_y))    
 
-for line in open("conflicts.txt"):
-    print("... " + line)
+
+for line in open("data/conflicts.txt"):
     if line[0] not in "ABC": continue
     col_label = line[0]
     fields = line.split()
@@ -78,10 +77,6 @@ for line in open("conflicts.txt"):
     class_num = fields[5]
 
     col_pos = day_columns[day_label] + offsets_col[col_label]
-
-    print("{} {}-{} {} column {}".format(day_label, start_hour_offset,
-                                          end_hour_offset,
-                                          class_num, col_label))
     draw_bar(grid,col_pos, start_hour_offset, end_hour_offset)
     grid.append(panes.Text(class_num, col_pos,
                                (start_hour_offset + end_hour_offset)/2))

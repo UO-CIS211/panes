@@ -56,8 +56,7 @@ class Pane:
         # We need to track extent (width and height) because
         # some scaling operations, particularly for grid layouts,
         # may be sensitive to the available extent.  Width and
-        # height are scaled to the units of the current pane. 
-
+        # height are scaled to the units of the current pane.
 
     def append(self, el):
         """
@@ -73,6 +72,38 @@ class Pane:
         if not self.parent:
             pygame.display.flip()
             screen.fill((255,255,255)) # For next frame
+
+    # Sometimes we want to translate a coordinate from one frame into another.
+    # For example, if we put a frame around a pane, we may want the x or y
+    # coordinate of the pane in the context of the surrounding frame. Typically
+    # we will want only the x or the y coordinate, so we provide those
+    # independently. Currently we support transformation only into an
+    # ancestor pane. 
+
+    def x_out(self, x, ancestor):
+        """
+        x coordinate in the parent pane
+        """
+        pane = self
+        while pane != ancestor:
+            x = (x * pane.sfx) + pane.dx
+            if not pane.parent:
+                raise PanesError("ancestor not on path to root")
+            pane = pane.parent
+        return x
+
+    def y_out(self, y, ancestor):
+        """
+        y coordinate in the parent pane
+        """
+        pane = self
+        while pane != ancestor:
+            y = (y * pane.sfy) + pane.dy
+            if not pane.parent:
+                raise PanesError("ancestor not on path to root")
+            pane = pane.parent
+        return y
+    
 
 
 class GridPane(Pane):
@@ -92,7 +123,23 @@ class GridPane(Pane):
         self.height = rows
         parent.append(self)
 
-        
+class Framed(Pane):
+    """
+    A pane with the same scale as the parent, but with margins carved out 
+    on top, bottom, left, right
+    """
+    def __init__(self, parent, left=0, right=0, top=0, bottom=0):
+        if not parent:
+            raise PanesError("A Framed pane may not be the root pane")
+        self.parent = parent
+        self.dx = left
+        self.dy = top
+        self.sfx = 1.0
+        self.sfy = 1.0
+        self.contents = [ ]
+        self.width = parent.width - (left + right)
+        self.height = parent.height - (top + bottom)
+        parent.append(self)
 
 class Transform:
     """
@@ -120,6 +167,7 @@ class Transform:
         return self.dx + self.sfx * x, self.dy + self.sfy * y
 
 
+
 #  Often we want a pane scaled to some real-world coordinate system.
 #  For example, we might want the X dimension to cover Monday-Friday
 #  with some room at the left for labels  (so 0=Monday, 1=Tuesday, etc),
@@ -127,17 +175,8 @@ class Transform:
 #  some space at the top for labels and a small margin at the bottom.
 #  This does not require a new class of object, but only some convenience
 #  functions for producing Panes with the appropriate transformations.
-# 
-# Additionally we want to break an overall pane into sub-panes, e.g.,
-# reserving left and right and/or top and bottom margins.  We'll often
-# want to do these together:  Break into panes and then use appropriate
-# coordinate systems for each pane.
-#
-# For breaking into sub-panes, we create a set of panes XY where
-#  X = Across, West, Center, East
-#  Y = Across, North, Center, South
-#  e.g., a request for an AN panel is a panel that spans the top of
-#  the enclosing frame.  These are given units of the enclosing frame.
+
+
 
 def is_numeric(x):
     return isinstance(x,int) or isinstance(x,float)
@@ -210,7 +249,7 @@ class Text:
         font = pygame.font.SysFont("Helvetica", 32)
         screen_coords = context.tx(self.loc)
         # print(screen_coords) # Debugging
-        img = font.render(self.text, False, self.color)
+        img = font.render(self.text, True, self.color)
         screen.blit(img,screen_coords)
 
     
