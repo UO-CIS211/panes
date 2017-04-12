@@ -238,15 +238,16 @@ class Text:
     """
     A string of text at coordinates (x,y)
     """
-    def __init__(self, text, x, y, color=(0,0,0)):
+    def __init__(self, text, x, y, size=12, color=(0,0,0)):
         self.loc = (x,y)
         # print("Placing text at {},{}".format(x,y))
         self.text = text
         self.color=color
+        self.size = size
 
     def render(self, context):
         assert isinstance(context, Transform)
-        font = pygame.font.SysFont("Helvetica", 32)
+        font = pygame.font.SysFont("Helvetica", self.size)
         screen_coords = context.tx(self.loc)
         # print(screen_coords) # Debugging
         img = font.render(self.text, True, self.color)

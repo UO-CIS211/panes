@@ -24,7 +24,7 @@ width,height = panes.SIZE
 framed = panes.Framed(root, left=30,right=10,top=30,bottom=10)
 grid = GridPane(framed, 10, 5)
 
-day_columns = { "m": 1, "t": 2, "w": 3, "r": 4, "f": 5 }
+day_columns = { "m": 0, "t": 1, "w": 2, "r": 3, "f": 4 }
 offsets_col = { "A": 0.1, "B": 0.4, "C": 0.7 }
 
 def hours_offset( time_string ):
@@ -46,24 +46,31 @@ def draw_bar(pane, in_col, from_time, to_time):
          fill=class_color))
 
 # Background columns in alternating greys
-for col in range(6):
+for col in range(5):
     for row in range(10):
         # Grey fill
         grid.append(panes.GridCellPoly(row, col,
                                        stroke=0,
                                        fill=bk_gnd[col % 2]))
-        # Black stroke
+        # white stroke
         grid.append(panes.GridCellPoly(row, col,
                                        stroke=2,
-                                       fill=(0,0,0)))
-
+                                       fill=(255,255,255)))
 
 # Label the hours
 for row in range(10):
     offset = row
     label_y = grid.y_out(offset, root)
-    print("Y coord for label: {} -> {}".format(offset, label_y))
-    root.append(panes.Text("{}".format(start_hour+row), 5, label_y))    
+    # print("Y coord for label: {} -> {}".format(offset, label_y))
+    root.append(panes.Text("{}".format(start_hour+row),
+                               10, label_y, size=20))
+
+# Label the days
+days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+for col in range(5):
+    label_x = grid.x_out(col, root)
+    print("Placing {} at {},{}".format(days[col], label_x, 5))
+    root.append(panes.Text(days[col], label_x, 5, size=20))
 
 
 for line in open("data/conflicts.txt"):
@@ -78,8 +85,12 @@ for line in open("data/conflicts.txt"):
 
     col_pos = day_columns[day_label] + offsets_col[col_label]
     draw_bar(grid,col_pos, start_hour_offset, end_hour_offset)
-    grid.append(panes.Text(class_num, col_pos,
-                               (start_hour_offset + end_hour_offset)/2))
+    grid.append(panes.Text(class_num,
+                               col_pos + 0.05,
+                               (start_hour_offset + end_hour_offset)/2, 
+                               size=18
+                               ))
+
         
 
 root.render()
